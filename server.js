@@ -1,8 +1,9 @@
 const express = require("express");
-const mongoose = require("mongoose");
+
 var bodyParser = require("body-parser");
 const app = express();
 const db = require("./config/dbConfig");
+const postModel = require("./model/postModel")
 db.connection();
 
 const port = 5000;
@@ -12,15 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
-const postSchema = new mongoose.Schema({
-  name: { type: String, default: "abc" },
-  age: { type: Number, min: 18, index: true },
-  bio: { type: String, match: /[a-z]/ },
-  date: { type: Date, default: Date.now },
-  buff: Buffer,
-});
-
-const postModel = mongoose.model("posts", postSchema);
+postModel.postModel();
 
 app.post("/:createPost", async (req, res) => {
   try {
