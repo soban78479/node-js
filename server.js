@@ -1,35 +1,118 @@
 const express = require("express");
-var bodyParser = require('body-parser');
+const mongoose = require("mongoose");
+var bodyParser = require("body-parser");
 const app = express();
+const db = require("./config/dbConfig");
+db.connection();
+
 const port = 5000;
-var posts=[];
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
+const postSchema = new mongoose.Schema({
+  name: { type: String, default: "abc" },
+  age: { type: Number, min: 18, index: true },
+  bio: { type: String, match: /[a-z]/ },
+  date: { type: Date, default: Date.now },
+  buff: Buffer,
+});
 
+const postModel = mongoose.model("posts", postSchema);
 
-app.post("/:createPost",(req,res)=>{
-  console.log(req.body)
-var post = req.body;
-posts=[...posts ,post];
-})
+app.post("/:createPost", async (req, res) => {
+  try {
+    const post = new postModel(req.body);
+    const result = await post.save();
+    console.log(result);
 
-app.get("/:getAllPosts",(req,res)=>{
+    res.status(200).json({
+      message: "sucess",
+      data: result,
+    });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({
+      message: "failed",
+      error: error,
+      data: [],
+    });
+  }
+});
 
-res.send(posts)
-})
+app.get("/:getAllPosts", async (req, res) => {
+  try {
+    posts = await postModel.find();
+    res.status(200).json({
+      message: "sucess",
+      data: posts,
+    });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({
+      message: "failed",
+      error: error,
+      data: [],
+    });
+  }
+});
 
-app.get("/:getOnePost/:id",(req,res)=>{
+app.get("/:getOnePost/:name", async (req, res) => {
+  try {
+    const post = await postModel.find({ name: req.params.name });
+    res.status(200).json({
+      message: "sucess",
+      data: post,
+    });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({
+      message: "failed",
+      error: error,
+      data: [],
+    });
+  }
+});
 
-  var matchingPost = posts.filter(post1 => post1.id === req.params.id );
+app.delete("/:deletePost/:name", async (req, res) => {
+  try {
+    const post = await postModel.deleteOne({ name: req.params.name });
+    res.status(200).json({
+      message: "This post deleted",
+      data: post,
+    });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({
+      message: "failed",
+      error: error,
+      data: [],
+    });
+  }
+});
 
-// Send the matching post object as the response
-res.send(matchingPost);
-console.log(req.params.id)
-  })
+app.put("/:editPost/:name", async (req, res) => {
+  try {
+    const post = await postModel.updateOne(
+      { name: req.params.name },
+      { $set: { name: req.body.name } }
+    );
+    res.status(200).json({
+      message: "The post updated",
+      data: post,
+    });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({
+      message: "failed",
+      error: error,
+      data: post,
+    });
+  }
+});
+
 // app.get("/:id/:name", (req, res) => {
 // var posts = [
 //   {
