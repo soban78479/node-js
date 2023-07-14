@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 async function connection() {
   try {
-   const connection =  await mongoose.connect('mongodb+srv://soban:12345@cluster0.0nnxxcs.mongodb.net/test');
+   const connection =  await mongoose.connect(process.env.dbURI);
      console.log("connection successful");
   } catch (error) {
     console.log(

@@ -7,8 +7,7 @@ const postSchema = new mongoose.Schema({
     buff: Buffer,
   });
   
-  const postModel = mongoose.model("posts", postSchema);
+  const postCollection = mongoose.model("posts", postSchema);
 
-  module.exports = {
-    postModel
-  }
+  module.exports =   postCollection
+  
